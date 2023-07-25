@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Booking</title>
+    <link rel="stylesheet" href="./css/style.css"> <!-- Add your custom CSS file here -->
+</head>
+<body>
+    <header>
+        <h1>Flight Booking</h1>
+    </header>
+    <main>
+        <div class="main" id="searchflightfilter">
+            <form id="flightBookingForm">
+                <div>
+                    <label class="floatleft" for="source">Departure:</label>
+                    <select class="customselect" name="source" id="source"></select>
+                </div>
+                <div>
+                    <label class="floatleft" for="destination">Destination:</label>
+                    <select class="customselect" name="destination" id="destination"></select>
+                </div>
+                <div>
+                    <label class="floatleft" for="departureDate">Departure Date:</label>
+                    <input type="date" id="departureDate" name="departureDate" required>
+                </div>
+                <div>
+                    <label class="floatleft" for="passengers">No of Passengers:</label>
+                    <input type="number" id="passengers" name="passengers" min="1" max="10" required>
+                </div>
+                <div>
+                    <button type="button" onclick="getAllFlightDetails()">Search Flights</button>
+                </div>
+            </form>
+        </div>
+
+
+        <div id="mainflightlist" class="hidden">
+            <div id="availableflightslist" class="availableflightlistmain">
+                <div id="flightlistscard" class="availableflightsub">
+
+
+                </div>
+            </div>
+        </div>
+
+        <div class='' id="bookmodal">
+            <div id="modal" class="modal">
+                <div class="modal-content" id="modalContent">
+                    <div id="bookingdetails">
+                        <h2 class="align-text-center"><b>Book Ticket</b></h2>
+                        <input type="text" id="name" placeholder="Enter your name" required>
+                        <input type="text" id="address" placeholder="Address" required>
+                        <input type="text" id="phone" placeholder="Phone" required>
+                        <input type="text" id="email" placeholder="email" required>
+                        <button class="width100" id="flightbookng" >Next &#8680;</button>
+                    </div>
+
+                    <div id="paymentdetails" class="hidden">
+                        <h2 class="align-text-center"><b>Payment Details</b></h2>
+                        <input type="number" id="cardno" placeholder="Enter Card No." required>
+                        <input type="text" id="cvv" maxlength="3" placeholder="CVV" required>
+                        <input type="text" class="expiry-textbox" id="expiryMonth" placeholder="MM" maxlength="2" required>
+                        <span>/</span>
+                        <input type="text" class="expiry-textbox" id="expiryYear" placeholder="YY" maxlength="2" required>
+                        <button class="width100" onclick="makePayment()">Submit</button>
+                    </div>
+
+                    <div class="hidden thankyoumodal" id="thankyou">
+                        <h2 class="align-text-center">Booking Confirmed</h2>
+                        <div class="card-top">
+                            <img class="thankyouimage" src="./images/thankyou.jpg" alt="Thank You Image">
+                        </div>
+                        <div class="card-bottom" id="thankyoucarddetails">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+    <footer>
+        <p>&copy; 2023 Your Airline Name. All rights reserved.</p>
+    </footer>
+    <script>
+        window.onload = function () {
+            getSourceAndDestinations();
+        };
+
+        function closemodal(){
+            const modal = document.getElementById('modal');
+            modal.style.display = 'none';
+        }
+
+        function bookflight(id){
+            const modal = document.getElementById('modal');
+            modal.style.display = 'flex';
+            const parentElement = document.getElementById('flightbookng');
+            parentElement.setAttribute('onclick', 'placebooking('+id+')');
+        }
+
+        function makePayment(){
+        // Change the window location to page2.html
+            const data = {
+                bookingid: localStorage.getItem("bookingsid"),
+                cardno: document.getElementById('cardno').value,
+                cvv: document.getElementById('cvv').value,
+                expirydate: document.getElementById('expiryMonth').value+"-"+document.getElementById('expiryYear').value
+            };
+
+            fetch("http://localhost:9192/savepaymentdetails", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => {
+                    console.log(response)
+                    if (!response.ok) {
+                        throw new Error("Network response was not ok.");
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if(data.status_code == 200){
+                        const flightBooking = document.getElementById('paymentdetails');
+                        flightBooking.style.display = 'none';
+                        const paymentBooking = document.getElementById('thankyou');
+                        paymentBooking.style.display = 'block';
+                        getBookingDetails(localStorage.getItem("bookingsid"));
+                    }else{
+                        alert("Authentication failed!");
+                    }
+                })
+                .catch(error => {
+                    alert("Something went wrong!");
+                });
+        }
+
+        function getBookingDetails(bookingid){
+            fetch("http://localhost:9192/flightbooking/"+bookingid, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            })
+                .then(response => {
+                    console.log(response)
+                    if (!response.ok) {
+                        throw new Error("Network response was not ok.");
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    var flightcard = "";
+                    if(data.status_code == 200){
+                        const flightListDiv = document.getElementById("thankyoucarddetails");
+                        var counter = 1;
+                        var imagename = "";
+                        data.data.forEach((bookingdrtail, index) => {
+                            if(counter == 11){
+                                counter = 0;
+                            }
+                            imagename = "fl"+counter+".jpg";
+                            counter++;
+                            flightcard = '<h2 class="align-text-center"><b>Booking Details</b></h2>\n' +
+                                '        <p><strong>Name:</strong> '+bookingdrtail.name+'</p>\n' +
+                                '        <p><strong>Address:</strong> '+bookingdrtail.address+'</p>\n' +
+                                '        <p><strong>Email:</strong> '+bookingdrtail.email+'</p>\n' +
+                                '        <p><strong>Phone:</strong> '+bookingdrtail.phone+'</p>\n' +
+                                '        <p><strong>Amount:</strong> <b style="color: green">'+bookingdrtail.price+'</b></p>\n' +
+                                '        <p><strong>Source:</strong> '+bookingdrtail.source+'</p>\n' +
+                                '        <p><strong>Destination:</strong> '+bookingdrtail.destination+'</p>\n' +
+                                '        <p><strong>Airlines:</strong> '+bookingdrtail.price+'</p>\n' +
+                                '        <input type="button" onclick="closemodal()" class="book-now-button" value="Close">\n';
+                            flightListDiv.insertAdjacentHTML("beforeend", flightcard);
+                        });
+                    }else{
+                        alert("Authentication failed!");
+                    }
+                })
+                .catch(error => {
+                    console.log(error);
+                    alert("Something went wrong!");
+                });
+        }
+
+        function placebooking(id){
+            // Change the window location to page2.html
+            const data = {
+                flightid: id,
+                name: document.getElementById('name').value,
+                address: document.getElementById('address').value,
+                phone: document.getElementById('phone').value,
+                email: document.getElementById('email').value,
+            };
+
+            fetch("http://localhost:9192/flightbooking", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => {
+                    console.log(response)
+                    if (!response.ok) {
+                        throw new Error("Network response was not ok.");
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if(data.status_code == 200){
+                        const flightBooking = document.getElementById('bookingdetails');
+                        flightBooking.style.display = 'none';
+                        const paymentBooking = document.getElementById('paymentdetails');
+                        paymentBooking.style.display = 'block';
+                        data.data.forEach((flight, index) => {
+                           localStorage.setItem("bookingsid", flight.bookingid);
+                        });
+                    }else{
+                        alert("Authentication failed!");
+                    }
+                })
+                .catch(error => {
+                    alert("Something went wrong!");
+                });
+        }
+
+        function getAllFlightDetails(){
+            var des = document.getElementById("destination").value;
+            var source = document.getElementById("source").value;
+            var date = document.getElementById("departureDate").value;
+            var cap = document.getElementById("passengers").value;
+            fetch("http://localhost:9192/searchflights/"+source+"/"+des+"/"+date+"/"+cap, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            })
+                .then(response => {
+                    console.log(response)
+                    if (!response.ok) {
+                        throw new Error("Network response was not ok.");
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    var flightcard = "";
+                    if(data.status_code == 200){
+                        if (data.data.length > 0){
+                            const searchfilter = document.getElementById('searchflightfilter');
+                            searchfilter.style.display = 'none';
+                            const flightlits = document.getElementById('mainflightlist');
+                            flightlits.style.display = 'block';
+                        }else{
+                            alert("No Flights Available");
+                        }
+                        const flightListDiv = document.getElementById("flightlistscard");
+                        var counter = 1;
+                        var imagename = "";
+                        data.data.forEach((flight, index) => {
+                            if(counter == 11){
+                                counter = 0;
+                            }
+                            imagename = "fl"+counter+".jpg";
+                            counter++;
+                            flightcard = ' <div class="flight-card">\n' +
+                                '      <div class="flight-image">\n' +
+                                '        <img src="./images/'+imagename+'" alt="Flight Image">\n' +
+                                '      </div>\n' +
+                                '      <div class="flight-info">\n' +
+                                '        <h2 class="align-text-center"><b>'+flight.name+'</b></h2>\n' +
+                                '        <p><b>Airline:</b> '+flight.airline+'</p>\n' +
+                                '        <p><b>Departure:</b> '+flight.source+'</p>\n' +
+                                '        <p><b>Arrival:</b> '+flight.destination+'</p>\n' +
+                                '        <p><b>Date:</b> '+flight.time+'</p>\n' +
+                                '        <p><b>Price:</b> '+flight.price+'</p>\n' +
+                                '        <input type="button" onclick="bookflight('+flight.id+')" class="book-now-button" value="Book Now">\n' +
+                                '      </div>\n' +
+                                '    </div>';
+                            flightListDiv.insertAdjacentHTML("beforeend", flightcard);
+                        });
+                    }else{
+                        alert("Authentication failed!");
+                    }
+                })
+                .catch(error => {
+                    console.log(error);
+                    alert("Something went wrong!");
+                });
+        }
+
+        function getSourceAndDestinations(){
+            fetch("http://localhost:9192/masterplaces", {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            })
+                .then(response => {
+                    console.log(response)
+                    if (!response.ok) {
+                        throw new Error("Network response was not ok.");
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if(data.status_code == 200){
+                        masterListOfPlaces = data.data;
+                        const selectElement = document.getElementById('source');
+                        const selectElementdes = document.getElementById('destination');
+                        selectElement.innerHTML = '';
+                        selectElementdes.innerHTML = '';
+                        data.data.forEach((source) => {
+                            const option = document.createElement('option');
+                            option.textContent = source.name;
+                            option.value = source.id;
+                            selectElement.appendChild(option);
+                        });
+                        data.data.forEach((source) => {
+                            const option = document.createElement('option');
+                            option.textContent = source.name;
+                            option.value = source.id;
+                            selectElementdes.appendChild(option);
+                        });
+                    }else{
+                        alert("Authentication failed!");
+                    }
+                })
+                .catch(error => {
+                    alert("Something went wrong!!!");
+                });
+        }
+
+
+    </script>
+        <!-- Add your custom JavaScript file here -->
+</body>
+</html>

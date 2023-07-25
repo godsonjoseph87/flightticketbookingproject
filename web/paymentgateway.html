@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Booking - Payment Gateway</title>
+    <link rel="stylesheet" href="./css/style.css"> <!-- Add your custom CSS file here -->
+</head>
+<body>
+    <header>
+        <h1>Flight Booking</h1>
+    </header>
+    <main>
+        <h2>Payment Details</h2>
+        <div id="paymentDetails">
+            <!-- Booking details will be displayed here -->
+            <p>Flight: Flight 1</p>
+            <p>Departure: City A</p>
+            <p>Destination: City B</p>
+            <p>Departure Date: 2023-07-31</p>
+            <p>Departure Time: 08:00 AM</p>
+            <p>Price: $200</p>
+            <form id="paymentForm">
+                <h3>Enter Card Details</h3>
+                <div>
+                    <label for="cardNumber">Card Number:</label>
+                    <input type="text" id="cardNumber" name="cardNumber" required>
+                </div>
+                <div>
+                    <label for="cardHolder">Card Holder Name:</label>
+                    <input type="text" id="cardHolder" name="cardHolder" required>
+                </div>
+                <div>
+                    <label for="expiryDate">Expiry Date:</label>
+                    <input type="text" id="expiryDate" name="expiryDate" placeholder="MM/YY" required>
+                </div>
+                <div>
+                    <label for="cvv">CVV:</label>
+                    <input type="password" id="cvv" name="cvv" required>
+                </div>
+                <div>
+                    <button type="submit">Make Payment</button>
+                </div>
+            </form>
+        </div>
+    </main>
+    <footer>
+        <p>&copy; 2023 Your Airline Name. All rights reserved.</p>
+    </footer>
+    <script src="./js/script.js"></script> <!-- Add your custom JavaScript file here -->
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Booking - Booking</title>
+    <link rel="stylesheet" href="./css/style.css"> <!-- Add your custom CSS file here -->
+</head>
+<body>
+    <header>
+        <h1>Flight Booking</h1>
+    </header>
+    <main>
+        <h2>Booking Details</h2>
+        <div id="bookingDetails">
+            <!-- Booking details will be displayed here -->
+            <p>Flight: Flight 1</p>
+            <p>Departure: City A</p>
+            <p>Destination: City B</p>
+            <p>Departure Date: 2023-07-31</p>
+            <p>Departure Time: 08:00 AM</p>
+            <p>Price: $200</p>
+            <form id="passengerDetailsForm">
+                <h3>Passenger Details</h3>
+                <div>
+                    <label for="passengerName">Name:</label>
+                    <input type="text" id="passengerName" name="passengerName" required>
+                </div>
+                <div>
+                    <label for="passengerEmail">Email:</label>
+                    <input type="email" id="passengerEmail" name="passengerEmail" required>
+                </div>
+                <div>
+                    <label for="passengerPhone">Phone:</label>
+                    <input type="tel" id="passengerPhone" name="passengerPhone" required>
+                </div>
+                <div>
+                    <button type="submit">Confirm Booking</button>
+                </div>
+            </form>
+        </div>
+    </main>
+    <footer>
+        <p>&copy; 2023 Your Airline Name. All rights reserved.</p>
+    </footer>
+    <script src="./js/script.js"></script> <!-- Add your custom JavaScript file here -->
+</body>
+</html>
